@@ -9,8 +9,8 @@ public class Main {
 		  try {
 	            Mestre mestre = new Mestre();
 
-	            mestre.adicionarCliente("rmi://26.161.56.125:1099/cliente1");
-	            mestre.adicionarCliente("rmi://26.161.56.125:1099/cliente2");
+	            mestre.adicionarCliente("rmi://localhost:1099/cliente1");
+	            mestre.adicionarCliente("rmi://localhost:1100/cliente2");
 
 	            Timer timer = new Timer();
 	            timer.scheduleAtFixedRate(new TimerTask() {
@@ -18,7 +18,7 @@ public class Main {
 	                public void run() {
 	                    mestre.sincronizarRelogios();
 	                }
-	            }, 0, 60_000); // a cada 1 minuto
+	            }, 0, 15_000); 
 
 	        } catch (Exception e) {
 	            e.printStackTrace();

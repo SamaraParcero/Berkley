@@ -1,4 +1,4 @@
-package cliente;
+package cliente2;
 
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
@@ -10,9 +10,9 @@ public class Main {
 	public static void main(String[] args) {
 		  try {
 	            RelogioInterface cliente = new RelogioCliente();
-	            String nome = "rmi://localhost:1099/cliente1"; 
+	            String nome = "rmi://localhost:1100/cliente2"; 
 
-	            LocateRegistry.createRegistry(1099);
+	            LocateRegistry.createRegistry(1100);
 	            Naming.rebind(nome, cliente);
 
 	            System.out.println("Cliente pronto. Esperando requisições do mestre.");
