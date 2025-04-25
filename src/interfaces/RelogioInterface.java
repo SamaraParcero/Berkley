@@ -5,6 +5,6 @@ import java.rmi.RemoteException;
 
 public interface RelogioInterface extends Remote {
     int getHoraAtual() throws RemoteException;
-    void ajustarHora(int minutos) throws RemoteException;
+    void ajustarHora(int segundos) throws RemoteException;
 
 }

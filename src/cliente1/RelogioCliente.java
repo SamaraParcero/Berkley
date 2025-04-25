@@ -1,4 +1,4 @@
-package cliente;
+package cliente1;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -12,7 +12,7 @@ public class RelogioCliente extends UnicastRemoteObject implements RelogioInterf
 
     public RelogioCliente() throws RemoteException {
         LocalTime agora = LocalTime.now();
-        this.horaEmMinutos = agora.getHour() * 60 + agora.getMinute();
+        this.horaEmMinutos = agora.getHour() * 3600 + agora.getMinute() *60 + agora.getSecond();
         System.out.println("Hora inicial do cliente: " + formatarHora(horaEmMinutos));
     }
 
@@ -24,11 +24,14 @@ public class RelogioCliente extends UnicastRemoteObject implements RelogioInterf
     @Override
     public void ajustarHora(int minutos) throws RemoteException {
         this.horaEmMinutos += minutos;
-        System.out.println("Hora ajustada: " + formatarHora(horaEmMinutos));
+        System.out.println("Hora ajustada cliente: " + formatarHora(horaEmMinutos));
     }
 
-    private String formatarHora(int minutos) {
-        return String.format("%02d:%02d", minutos / 60, minutos % 60);
+    private String formatarHora(int segundos) {
+        int horas = segundos / 3600;
+        int minutos = (segundos % 3600) / 60;
+        int segs = segundos % 60;
+        return String.format("%02d:%02d:%02d", horas, minutos, segs);
     }
 
 }
