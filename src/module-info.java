@@ -1,7 +1,7 @@
 
 module berkley {
-    exports cliente1;
-    exports cliente2;
+    exports main;
+    exports clientes;
     exports mestre;
     exports interfaces;
 	 requires java.rmi;

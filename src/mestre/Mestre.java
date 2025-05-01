@@ -1,63 +1,72 @@
 package mestre;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import interfaces.RelogioInterface;
 
-public class Mestre {
+public class Mestre extends UnicastRemoteObject implements RelogioInterface {
+   
+	private static final long serialVersionUID = 1L;
+	private long horario;
 
-    private List<RelogioInterface> clientes = new ArrayList<>();
+	private long offsetMillis;
+	private long startTime;
 
-    public void adicionarCliente(String host, int porta, String nome) {
+	public Mestre() throws RemoteException {
+	    super();
+	    this.startTime = System.currentTimeMillis();
+	    this.offsetMillis = 0;
+	}
+
+    public void sincronizar() {
         try {
-            System.out.println("Tentando conectar ao cliente " + nome + " na porta " + porta);
-            Registry registry = LocateRegistry.getRegistry(host, porta);
-            RelogioInterface cliente = (RelogioInterface) registry.lookup(nome);
-            clientes.add(cliente);
-            System.out.println("Cliente adicionado: " + nome + " na porta " + porta);
-        } catch (Exception e) {
-            System.out.println("Erro ao adicionar cliente " + nome + ": " + e.getMessage());
-        }
-    }
+            RelogioInterface c1 = (RelogioInterface) Naming.lookup("rmi://localhost:1099/cliente1");
+            RelogioInterface c2 = (RelogioInterface) Naming.lookup("rmi://localhost:1099/cliente2");
 
-    public void sincronizarRelogios() {
-        try {
-            int mestreHora = LocalTime.now().getHour() * 3600 +
-                             LocalTime.now().getMinute() * 60 +
-                             LocalTime.now().getSecond();
+            long h1 = c1.getHorario();
+            long h2 = c2.getHorario();
 
-            System.out.println("Hora do mestre: " + formatarHora(mestreHora));
+            System.out.println("Mestre: horario atual: " + formatarHorario(horario));
 
-            int soma = 0;
-            for (RelogioInterface cliente : clientes) {
-                int horaCliente = cliente.getHoraAtual();
-                int diferenca = horaCliente - mestreHora;
-                soma += diferenca;
-                System.out.println("Hora cliente: " + formatarHora(horaCliente) + " | Diferença: " + diferenca);
-            }
+            long soma = h1 + h2 + horario;
+            long media = soma / 3;
 
-            int media = soma / (clientes.size() + 1);
-            System.out.println("Ajuste calculado (média): " + media);
+            long difMestre = media - horario;
+            long difC1 = media - h1;
+            long difC2 = media - h2;
 
-            for (RelogioInterface cliente : clientes) {
-                cliente.ajustarHora(-media);
-            }
+            System.out.println("Ajustando horarios...");
+            System.out.println("Mestre: horario anterior: " + formatarHorario(horario));
+            horario += difMestre;
+            System.out.println("Mestre: horario ajustado: " + formatarHorario(horario));
 
-            System.out.println("Nova hora estimada do mestre: " + formatarHora(mestreHora - media));
-            System.out.println("Todos os relógios ajustados com sucesso.");
+            c1.ajustarHorario(difC1);
+            c2.ajustarHorario(difC2);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private String formatarHora(int segundos) {
-        int horas = segundos / 3600;
-        int minutos = (segundos % 3600) / 60;
-        int segs = segundos % 60;
-        return String.format("%02d:%02d:%02d", horas, minutos, segs);
+    @Override
+    public long getHorario() throws RemoteException {
+        return System.currentTimeMillis() - startTime + offsetMillis + startTime;
+    }
+
+    @Override
+    public void ajustarHorario(long diferenca) throws RemoteException {
+        offsetMillis += diferenca;
+    }
+    
+    private String formatarHorario(long millis) {
+        return Instant.ofEpochMilli(millis)
+                      .atZone(ZoneId.systemDefault())
+                      .format(DateTimeFormatter.ofPattern("HH:mm:ss"));
     }
 }
